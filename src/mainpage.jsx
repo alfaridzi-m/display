@@ -31,8 +31,12 @@ const Mainpage = () => {
 
                 <div className="bg-amber-300 w-1/4 rounded-2xl text-2xl"> text
                 </div>
-
             </div>
+        </div>
+        <div className='flex flex-row h-[700px] bg-gray-400 mt-10 w-full'> 
+            <div className='w-1/3 bg-amber-200 h-full'></div>
+            <div className='w-1/3 bg-gray-400 h-full'></div>
+            <div className='w-1/3 bg-white h-full'></div>
         </div>
     </div>
     </>
