@@ -33,10 +33,10 @@ const Mainpage = () => {
                 </div>
             </div>
         </div>
-        <div className='flex flex-row h-[700px] bg-gray-400 mt-10 w-full'> 
-            <div className='w-1/3 bg-amber-200 h-full'></div>
-            <div className='w-1/3 bg-gray-400 h-full'></div>
-            <div className='w-1/3 bg-white h-full'></div>
+        <div className='flex flex-row h-[700px] mt-10 w-full gap-4'> 
+            <div className='w-1/2 bg-amber-200 h-full rounded-2xl'></div>
+            <div className='w-1/4 bg-gray-400 h-full rounded-2xl'></div>
+            <div className='w-1/2 bg-white h-full rounded-2xl'></div>
         </div>
     </div>
     </>
