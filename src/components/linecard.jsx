@@ -11,12 +11,16 @@ import {
 } from "recharts";
 
 const data = [
-  { time: "15 AM", value: 70, status: "Sunny" },
-  { time: "18 AM", value: 65, status: "Sunny" },
-  { time: "21 AM", value: 90, status: "Rainy" },
-  { time: "00 PM", value: 45, status: "Heavy" },
-  { time: "03 PM", value: 80, status: "Rainy" },
-  { time: "06 PM", value: 35, status: "Heavy" },
+  { time: "15", value: 70, status: "Sunny" },
+  { time: "16", value: 70, status: "Sunny" },
+  { time: "17", value: 70, status: "Sunny" },
+  { time: "18", value: 65, status: "Sunny" },
+  { time: "19", value: 65, status: "Sunny" },
+  { time: "20", value: 65, status: "Sunny" },
+  { time: "21", value: 90, status: "Rainy" },
+  { time: "00", value: 45, status: "Heavy" },
+  { time: "03", value: 80, status: "Rainy" },
+  { time: "06", value: 35, status: "Heavy" },
 ];
 
 function WeatherChart() {
@@ -31,8 +35,8 @@ function WeatherChart() {
             domain={[0, 100]}
             ticks={[30, 60, 90]} // manual posisi Rainy, Sunny, Heavy
             tickFormatter={(val) => {
-              if (val === 90) return "Rainy";
               if (val === 60) return "Sunny";
+              if (val === 90) return "Rainy";
               if (val === 30) return "Heavy";
               return "";
             }}
