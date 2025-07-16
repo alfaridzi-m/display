@@ -18,8 +18,12 @@
     "@tailwindcss/vite": "^4.1.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-slick": "^0.30.3",
     "recharts": "^3.0.0",
-    "tailwindcss": "^4.1.10"
+    "slick-carousel": "^1.8.1",
+    "styled": "^1.0.0",
+    "tailwindcss": "^4.1.10",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

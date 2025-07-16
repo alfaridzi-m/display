@@ -1,7 +1,6 @@
 import {
   LineChart,
   Line,
-  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -33,11 +32,11 @@ function WeatherChart() {
           <YAxis className="text-base"
             stroke="#ccc"
             domain={[0, 100]}
-            ticks={[30, 60, 90]} // manual posisi Rainy, Sunny, Heavy
+            ticks={[30, 60, 90]}
             tickFormatter={(val) => {
-              if (val === 60) return "Sunny";
-              if (val === 90) return "Rainy";
-              if (val === 30) return "Heavy";
+              if (val === 60) return "60";
+              if (val === 90) return "90";
+              if (val === 30) return "30";
               return "";
             }}
           />

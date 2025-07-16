@@ -1,33 +1,28 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLocationDot, faCloudSunRain, faLocationArrow, faWind, faTemperature0, faCloudMoon } from '@fortawesome/free-solid-svg-icons'
 import WeatherChart from './components/linecard'
-import WsevernDays from './components/card-wsevenday'
 import WheatherToday from './components/card-wheathertoday'
+import SevendaySection from './section/seven-days'
+
 
 const Mainpage = () => {
+
   return (
     <> 
     <div className="bg-black w-screen h-screen p-8 flex flex-col">
-        <div className="text-white flex justify-center text-5xl font-bold flex-row gap-4 items-baseline">
+        <div className="text-white flex justify-center text-5xl font-bold flex-row gap-4 items-center relative">
+            <input type="search" placeholder='Cari lokasi'  name='searchbar' className='rounded-xl p-2 text-base w-[400px] border-gray-50 border-2 absolute left-0'/>
             <FontAwesomeIcon icon={faLocationDot}  className='text-4xl'/>
-            <h1>Location Pelabuhan Mana</h1>
+            <h1>Lokasi Pelabuhan Mana</h1>
         </div>
         <div className="text-white flex flex-col w-full">
             <div className="flex flex-row gap-5 p-5 text-xl font-bold">
                 <p className='text-gray-500'>Hari ini</p>
-                <p className='text-gray-500'>Besok</p>
                 <p>7 Hari kedepan</p>
             </div>
             <div className="flex flex-row w-full gap-5 h-full">
                 <WheatherToday temp={'15'} date={'Jumat'} />
-                <div className=" flex flex-row w-1/2 gap-5 justify-between">
-                    <WsevernDays date={'Sabtu'}  temp={'17'} />
-                    <WsevernDays date={'Minggu'} temp={'18'} />
-                    <WsevernDays date={'Senin'}  temp={'19'} />
-                    <WsevernDays date={'Selasa'} temp={'20'} />
-                    <WsevernDays date={'Rabu'}   temp={'21'} />
-                    <WsevernDays date={'Kamis'}  temp={'22'} />
-                </div>
+                 <SevendaySection />
                 <div className=" w-1/4 rounded-2xl text-2xl">
                     <WeatherChart />
                 </div>
@@ -58,8 +53,11 @@ const Mainpage = () => {
                 
             
             </div>
-            <div className='w-1/3 bg-gray-400 rounded-2xl bg-[url(./src/image/bg.jpg)] bg-cover'></div>
-            <div className='w-1/3 rounded-2xl flex flex-col gap-5'>
+            <div className='w-1/3 rounded-2xl flex flex-col justify-between'>
+                <WeatherChart />
+                <WeatherChart />
+            </div>
+            <div className='w-1/3 rounded-2xl flex flex-col gap-5 overflow-hidden now'>
                 <div className='bg-[#1B1B1D] rounded-3xl item-center  border-1 border-gray-700 h-[200px] text-4xl text-white p-10 flex flex-row justify-between'>
                     <div className='flex flex-col gap-2'>
                         <h2 className='text-gray-400'>Pelabuhan</h2>
