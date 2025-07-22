@@ -301,7 +301,7 @@ const darkTheme = {
 
 export default function App() {
   const pages = ['weather', 'cities', 'map', 'fish'];
-  const animationDuration = 1000;
+  const animationDuration = 10;
   const [activePage, setActivePage] = useState(pages[0]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const theme = isDarkMode ? darkTheme : lightTheme;
