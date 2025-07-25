@@ -179,20 +179,26 @@ const AirConditionItem = ({ icon: Icon, label, value, unit, theme }) => (
 );
 
 const WeatherPage = ({ theme }) => {
+    const [data, setData] = useState([]);
+
     useEffect(() => {
-    const fetchData = async () => {
-      const url = 'https://maritim.bmkg.go.id/marine-data/pelabuhan/AA001.json';
+        const url = 'https://maritim.bmkg.go.id/marine-data/pelabuhan/AA001.json';
 
-      try {
-        const data = await axios.get(url);
-        console.log(data.data);
-      } catch (error) {
-        console.error('Terjadi kesalahan saat mengambil data:', error.message);
-      }
-    };
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(url);
+                const responseData = response.data;
+                setData(responseData);
+                console.log(responseData);
 
-    fetchData();
-  }, []);
+            } catch (error) {
+                console.error('Gagal mengambil data:', error.message);
+            }
+        };
+
+        fetchData();
+    }, []);
+    const jamData = data.forecast_day1
     const hourlyData = [
         { time: '6:00 AM', icon: Cloud, temp: 25 }, { time: '9:00 AM', icon: CloudSun, temp: 28 },
         { time: '12:00 PM', icon: Sun, temp: 33 }, { time: '3:00 PM', icon: Sun, temp: 34 },
