@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sun, Cloud, CloudRain, CloudLightning, Wind, Droplets, Thermometer, Map, List, CloudSun, Navigation, Moon, FishSymbol, Waves, Anchor } from 'lucide-react';
 // Import Leaflet dari CDN
+import axios from 'axios';
 import L from 'https://esm.sh/leaflet';
 
 // --- Komponen UI ---
@@ -178,6 +179,20 @@ const AirConditionItem = ({ icon: Icon, label, value, unit, theme }) => (
 );
 
 const WeatherPage = ({ theme }) => {
+    useEffect(() => {
+    const fetchData = async () => {
+      const url = 'https://maritim.bmkg.go.id/marine-data/pelabuhan/AA001.json';
+
+      try {
+        const data = await axios.get(url);
+        console.log(data.data);
+      } catch (error) {
+        console.error('Terjadi kesalahan saat mengambil data:', error.message);
+      }
+    };
+
+    fetchData();
+  }, []);
     const hourlyData = [
         { time: '6:00 AM', icon: Cloud, temp: 25 }, { time: '9:00 AM', icon: CloudSun, temp: 28 },
         { time: '12:00 PM', icon: Sun, temp: 33 }, { time: '3:00 PM', icon: Sun, temp: 34 },
@@ -197,7 +212,7 @@ const WeatherPage = ({ theme }) => {
             <div className="lg:col-span-2 card-item">
                 <div className={`${theme.glassCardClass} p-6 flex flex-col sm:flex-row items-center justify-between mb-6`}>
                     <div>
-                        <h2 className={`text-3xl font-bold ${theme.text.primary}`}>Madrid</h2>
+                        <h2 className={`text-3xl font-bold ${theme.text.primary}`}>{data.name}</h2>
                         <p className={theme.text.secondary}>Chance of rain: 0%</p>
                         <p className={`text-7xl sm:text-8xl font-bold my-4 ${theme.text.primary}`}>31°</p>
                     </div>
