@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sun, Cloud, CloudRain, CloudLightning, Wind, Droplets, Thermometer, Map, List, CloudSun, Navigation, Moon, FishSymbol, Waves, Anchor } from 'lucide-react';
-// Import Leaflet dari CDN
+import { Sun, CloudFog, CloudSun, Cloud, Cloudy ,CloudDrizzle , CloudRain, CloudRainWind, CloudLightning, Wind, Droplets, Thermometer, Map, List, Navigation, Moon, FishSymbol, Waves, Anchor } from 'lucide-react';
+import WeatherIcon from './components/weather-cion';
 import axios from 'axios';
-import L from 'https://esm.sh/leaflet';
+import windDirectionToDegrees from './components/wind-dir';
 
 // --- Komponen UI ---
 
@@ -255,20 +255,20 @@ const WeatherPage = ({ theme }) => {
     );
 };
 
-const CityCard = ({ city, country, temp, conditionIcon: Icon, conditionText, windSpeed, windDirection, waveHeight, theme }) => (
-    <div className={`${theme.glassCardClass} p-5 flex flex-col justify-between`}>
+const CityCard = ({ port, tempRange, conditionText, windSpeed, windDirection, waveRange, theme }) => (
+    <div className={`${theme.glassCardClass} p-5 flex flex-col justify-between min-h-[250px]`}>
         <div>
-            <p className={`${theme.text.secondary} text-sm`}>{country}</p>
-            <h3 className={`text-2xl font-bold ${theme.text.primary}`}>{city}</h3>
+            <p className={`${theme.text.secondary} text-sm`}>Pelabuhan</p>
+            <h3 className={`text-2xl font-bold ${theme.text.primary}`}>{port}</h3>
         </div>
         <div className="text-center my-4 flex flex-col justify-center items-center">
-             <Icon className="w-20 h-20 text-yellow-500" />
+             <WeatherIcon condition={conditionText}/>
              <p className={`text-xl font-bold ${theme.text.primary}`}>{conditionText}</p>
         </div>
         <div className={`mt-auto pt-4 border-t ${theme.border} grid grid-cols-3 gap-2 text-center text-sm`}>
             <div className="flex flex-col items-center justify-center">
                 <Thermometer className="w-6 h-6 mb-1 text-red-500" />
-                <span className={theme.text.primary}>{temp}°</span>
+                <span className={theme.text.primary}>{tempRange}</span>
             </div>
             <div className="flex flex-col items-center justify-center">
                 <Navigation className={`w-6 h-6 mb-1 ${theme.text.secondary}`} style={{ transform: `rotate(${windDirection}deg)` }} />
@@ -276,31 +276,92 @@ const CityCard = ({ city, country, temp, conditionIcon: Icon, conditionText, win
             </div>
             <div className="flex flex-col items-center justify-center">
                 <Waves className="w-6 h-6 mb-1 text-cyan-500" />
-                <span className={theme.text.primary}>{waveHeight} m</span>
+                <span className={theme.text.primary}>{waveRange}</span>
             </div>
         </div>
     </div>
 );
 
 const CitiesPage = ({ theme }) => {
-    const citiesData = [
-        { city: 'Tokyo', country: 'Japan', temp: 29, conditionIcon: CloudSun, conditionText: 'Cloudy', windSpeed: 15, windDirection: 120, waveHeight: 1.2 },
-        { city: 'London', country: 'UK', temp: 18, conditionIcon: CloudRain, conditionText: 'Rainy', windSpeed: 22, windDirection: 240, waveHeight: 0.5 },
-        { city: 'New York', country: 'USA', temp: 31, conditionIcon: Sun, conditionText: 'Sunny', windSpeed: 8, windDirection: 80, waveHeight: 1.8 },
-        { city: 'New York', country: 'USA', temp: 31, conditionIcon: Sun, conditionText: 'Sunny', windSpeed: 8, windDirection: 80, waveHeight: 1.8 },
-        { city: 'New York', country: 'USA', temp: 31, conditionIcon: Sun, conditionText: 'Sunny', windSpeed: 8, windDirection: 80, waveHeight: 1.8 },
-        { city: 'Sydney', country: 'Australia', temp: 22, conditionIcon: Cloud, conditionText: 'Overcast', windSpeed: 18, windDirection: 310, waveHeight: 2.1 },
-    ];
+    const [portData, setPortData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Peringkat "keganasan" cuaca, dari terbaik ke terburuk
+    const weatherSeverity = {
+        'Cerah': 0, 'Cerah Berawan': 1, 'Berawan': 2, 'Berawan Tebal': 3,
+        'Kabut': 4, 'Hujan Ringan': 5, 'Hujan Sedang': 6, 'Hujan Lebat': 7,
+        'Hujan Petir': 8, 'default': 0
+    };
+
+    useEffect(() => {
+        const portEndPoints = ['AA001','AA004', 'AA005', 'AA006', 'AA007','AA008','AA009','AA010','AA011','AA012','AA013','AA015'];
+        const urls = portEndPoints.map(id => `https://maritim.bmkg.go.id/marine-data/pelabuhan/${id}.json`);
+
+        const fetchAllData = async () => {
+            setIsLoading(true);
+            try {
+                const requests = urls.map(url => axios.get(url));
+                const responses = await Promise.all(requests);
+                const allData = responses.map(res => res.data);
+                setPortData(allData);
+            } catch (err) {
+                console.error("Gagal mengambil data:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchAllData();
+    }, []);
+
     return (
         <div className="card-container">
-            <h1 className={`text-3xl font-bold mb-6 ${theme.text.primary} card-item`}>Cities</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {citiesData.map((city, index) => (
-                  <div key={city.city} className="card-item" style={{animationDelay: `${index * 100}ms`}}>
-                    <CityCard {...city} theme={theme}/>
-                  </div>
-                ))}
-            </div>
+            <h1 className={`text-3xl font-bold mb-6 ${theme.text.primary} card-item`}>Prakiraan Harian Pelabuhan</h1>
+            {isLoading ? (
+                <div className={`text-center p-10 ${theme.text.primary}`}>Loading Cities Data...</div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                    {portData.map((port, index) => {
+                        if (!port || !port.forecast_day1 || port.forecast_day1.length === 0) {
+                            return null;
+                        }
+
+                        // Analisis data untuk 24 jam
+                        const dailyForecasts = port.forecast_day1;
+                        let worstWeather = dailyForecasts[0].weather;
+                        let minTemp = dailyForecasts[0].temp_avg;
+                        let maxTemp = dailyForecasts[0].temp_avg;
+                        let minWave = dailyForecasts[0].wave_height;
+                        let maxWave = dailyForecasts[0].wave_height;
+
+                        dailyForecasts.forEach(forecast => {
+                            // Temukan cuaca terburuk
+                            if ((weatherSeverity[forecast.weather] || 0) > (weatherSeverity[worstWeather] || 0)) {
+                                worstWeather = forecast.weather;
+                            }
+                            // Temukan rentang suhu
+                            if (forecast.temp_avg < minTemp) minTemp = forecast.temp_avg;
+                            if (forecast.temp_avg > maxTemp) maxTemp = forecast.temp_avg;
+                            // Temukan rentang gelombang
+                            if (forecast.wave_height < minWave) minWave = forecast.wave_height;
+                            if (forecast.wave_height > maxWave) maxWave = forecast.wave_height;
+                        });
+
+                        return (
+                            <div key={port.code} className="card-item" style={{animationDelay: `${index * 100}ms`}}>
+                                <CityCard 
+                                    port={port.name.replace('Pelabuhan ', '')}
+                                    tempRange={`${minTemp}° - ${maxTemp}°`}
+                                    conditionText={worstWeather}
+                                    windSpeed={dailyForecasts[0].wind_speed} // Ambil data pertama sebagai representasi
+                                    windDirection={windDirectionToDegrees(dailyForecasts[0].wind_from)}
+                                    waveRange={`${minWave} - ${maxWave} m`}
+                                    theme={theme}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };
