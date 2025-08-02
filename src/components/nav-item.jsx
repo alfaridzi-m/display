@@ -1,7 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Sun, Cloud, CloudRain, CloudLightning, Wind, Droplets, Thermometer, Map, List, CloudSun, Navigation, Moon, FishSymbol, Waves, Anchor } from 'lucide-react';
-// Import Leaflet dari CDN
-import L from 'https://esm.sh/leaflet';
+import WaveFill from './wave-fill';
 
 const NavItem = ({ icon: Icon, label, isActive, animationDuration, theme, onClick }) => (
   <button

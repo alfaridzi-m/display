@@ -9,7 +9,7 @@ const RunningText = ({ theme }) => {
             try {
                 const response = await axios.get('https://bmkg-content-inatews.storage.googleapis.com/datagempa.json');
                 const infoGempa = response.data.info;
-                const combinedText = `--${infoGempa.instruction} --- ${infoGempa.description}\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0`;
+                const combinedText = `--- ${infoGempa.description} --- ${infoGempa.instruction}\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0`;
                 setRunningText(combinedText);
             } catch (error) {
                 console.error("Gagal mengambil data gempa:", error);
