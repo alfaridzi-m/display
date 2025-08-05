@@ -30,7 +30,7 @@ const darkTheme = {
 };
 
 
-const Sidebar = ({ activePage, handleNavClick, isDarkMode, setIsDarkMode, animationDuration }) => {
+const Sidebar = ({ activePage, handleNavClick, isDarkMode, setIsDarkMode, pageDurations }) => {
     const theme = isDarkMode ? darkTheme : lightTheme;
 
     return (
@@ -114,14 +114,14 @@ const Sidebar = ({ activePage, handleNavClick, isDarkMode, setIsDarkMode, animat
 
         </div>
         <nav className="w-full md:w-auto flex-grow flex flex-row md:flex-col justify-around md:justify-start md:items-center">
-          <NavItem icon={Cloud} label="Weather" isActive={activePage === 'weather'} onClick={() => handleNavClick('weather')} animationDuration={animationDuration} theme={theme}/>
-          <NavItem icon={Anchor} label="Cities" isActive={activePage === 'cities'} onClick={() => handleNavClick('cities')} animationDuration={animationDuration} theme={theme}/>
-          <NavItem icon={Map} label="Map" isActive={activePage === 'map'} onClick={() => handleNavClick('map')} animationDuration={animationDuration} theme={theme}/>
-          <NavItem icon={FishSymbol} label="Fish Map" isActive={activePage === 'fish'} onClick={() => handleNavClick('fish')} animationDuration={animationDuration} theme={theme}/>
+          <NavItem icon={Cloud} label="Weather" isActive={activePage === 'weather'} onClick={() => handleNavClick('weather')} animationDuration={pageDurations.weather / 1000} theme={theme}/>
+          <NavItem icon={Anchor} label="Cities" isActive={activePage === 'cities'} onClick={() => handleNavClick('cities')} animationDuration={pageDurations.cities / 1000} theme={theme}/>
+          <NavItem icon={Map} label="Map" isActive={activePage === 'map'} onClick={() => handleNavClick('map')} animationDuration={pageDurations.map / 1000} theme={theme}/>
+          <NavItem icon={FishSymbol} label="Fish Map" isActive={activePage === 'fish'} onClick={() => handleNavClick('fish')} animationDuration={pageDurations.fish / 1000} theme={theme}/>
         </nav>
         <div className="hidden md:flex mt-auto">
              <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-3 rounded-full transition-colors ${theme.nav.text} hover:${theme.nav.hoverBg}`}>
-                {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+               {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
              </button>
         </div>
       </div>

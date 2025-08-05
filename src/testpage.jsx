@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sun, CloudFog, CloudSun, Cloud, Cloudy ,CloudDrizzle , CloudRain, CloudRainWind, CloudLightning, Wind, Droplets, Thermometer, Map, List, Navigation, Moon, FishSymbol, Waves, Anchor } from 'lucide-react';
+import { Wind, Thermometer, Navigation, Waves } from 'lucide-react';
 import WeatherIcon from './components/weather-cion';
 import Clock from './components/clock';
 import axios from 'axios';
@@ -8,28 +8,6 @@ import Sidebar from './components/side-bar';
 import RunningText from './components/running-text';
 // --- Komponen UI ---
 
-const WaveFill = ({ animationDuration, theme, pageKey }) => (
-    // Menambahkan `key` untuk memaksa re-mount dan restart animasi setiap kali halaman berubah
-    <div key={pageKey} className="absolute bottom-0 left-0 w-full h-full overflow-hidden rounded-lg z-0">
-        <div 
-            className="absolute w-full h-full" // Pastikan h-full ada di sini agar transform berfungsi
-            style={{ animation: `wave-fill ${animationDuration}s linear forwards`}}
-        >
-            <div className={`absolute w-[200%] h-[200%] -left-[50%] top-0 ${theme.nav.activeFill}`}
-                style={{ 
-                    animation: `wave-move 4s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite`,
-                    borderRadius: '40%'
-                }}
-            ></div>
-             <div className={`absolute w-[200%] h-[200%] -left-[50%] top-0 ${theme.nav.activeFill} opacity-70`}
-                style={{ 
-                    animation: `wave-move 6s cubic-bezier(0.36, 0.45, 0.63, 0.53) -.125s infinite`,
-                    borderRadius: '40%'
-                }}
-            ></div>
-        </div>
-    </div>
-);
 const getWaveColor = (category) => {
     const colors = {
         'Tenang': 'bg-blue-300',
@@ -43,9 +21,9 @@ const getWaveColor = (category) => {
 };
 
 const HourlyForecastCard = ({ time, icon, temp, windSpeed, windGust, waveHeight, waveCategory, theme }) => (
-    <div className={`flex flex-col items-center justify-between rounded-2xl p-4 mx-2 w-36 h-52 flex-shrink-0 ${theme.glassCardClass} ${theme.text.primary}`}>
-        <span className={`${theme.text.secondary} text-base font-semibold`}>{time}</span>
-        <WeatherIcon condition={icon} className="w-12 h-12 my-1" />
+    <div className={`flex flex-col items-center justify-between rounded-2xl p-4 mx-2 w-56 h-80 flex-shrink-0 ${theme.glassCardClass} ${theme.text.primary}`}>
+        <span className={`${theme.text.secondary} text-2xl font-semibold`}>{time}</span>
+        <WeatherIcon condition={icon} size={90} className="my-1" />
         <span className="text-3xl font-bold">{temp}°</span>
         <div className={`w-full mt-2 pt-2 border-t ${theme.border} text-sm`}>
             <div className="flex justify-center items-center space-x-1">
@@ -62,7 +40,7 @@ const HourlyForecastCard = ({ time, icon, temp, windSpeed, windGust, waveHeight,
     </div>
 );
 
-const DailyForecastItem = ({ day, icon, condition, temp, theme }) => (
+const DailyForecastItem = ({ day, condition, temp, theme }) => (
   <div className={`flex items-center justify-between p-3 border-b ${theme.border} last:border-b-0`}>
     <span className={`${theme.text.secondary} w-1/4`}>{day}</span>
     <div className={`flex items-center w-1/2 ${theme.text.primary}`}>
@@ -73,8 +51,42 @@ const DailyForecastItem = ({ day, icon, condition, temp, theme }) => (
   </div>
 );
 
-const WeatherPage = ({ theme }) => {
-    const [data, setData] = useState(null);
+const Calendar = ({ theme }) => {
+    const today = new Date();
+    const month = today.getMonth();
+    const year = today.getFullYear();
+    const date = today.getDate();
+
+    const monthName = today.toLocaleDateString('id-ID', { month: 'long' });
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 for Sunday, 1 for Monday...
+
+    const daysOfWeek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+    const blanks = Array(firstDayOfMonth).fill(null);
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    return (
+        <div className={`${theme.glassCardClass} p-4 rounded-3xl h-full`}>
+            <div className="flex justify-between items-center mb-2">
+                <h3 className={`text-2xl ${theme.text.primary}`}>{monthName} {year}</h3>
+            </div>
+            <div className="grid grid-cols-7 gap-2 text-center text-xl">
+                {daysOfWeek.map(day => <div key={day} className={`font-semibold ${theme.text.secondary}`}>{day}</div>)}
+                {blanks.map((_, i) => <div key={`blank-${i}`}></div>)}
+                {days.map(d => (
+                    <div key={d} className={`p-1 rounded-full ${d === date ? 'bg-sky-500 text-white' : ''} ${theme.text.primary}`}>
+                        {d}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const WeatherPage = ({ theme, list }) => {
+    const [portData, setPortData] = useState([]);
+    const [activePortIndex, setActivePortIndex] = useState(0);
     const [loading, setLoading] = useState(true);
 
     const weatherSeverity = {
@@ -84,13 +96,15 @@ const WeatherPage = ({ theme }) => {
     };
 
     useEffect(() => {
-        const url = 'https://maritim.bmkg.go.id/marine-data/pelabuhan/AA005.json';
+        const portIds = list;
+        const urls = portIds.map(id => `https://maritim.bmkg.go.id/marine-data/pelabuhan/${id}.json`);
 
-        const fetchData = async () => {
+        const fetchAllData = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(url);
-                setData(response.data);
+                const responses = await Promise.all(urls.map(url => axios.get(url)));
+                const allData = responses.map(res => res.data);
+                setPortData(allData);
             } catch (error) {
                 console.error('Gagal mengambil data cuaca:', error.message);
             } finally {
@@ -98,17 +112,28 @@ const WeatherPage = ({ theme }) => {
             }
         };
 
-        fetchData();
-    }, []);
+        fetchAllData();
+    }, [list]);
 
-    if (loading || !data) {
+    useEffect(() => {
+        if (portData.length > 1) {
+            const timer = setInterval(() => {
+                setActivePortIndex(prevIndex => (prevIndex + 1) % portData.length);
+            }, 15000); // Ganti setiap 15 detik
+            return () => clearInterval(timer);
+        }
+    }, [portData]);
+
+    if (loading || portData.length === 0) {
         return <div className={`text-center p-10 ${theme.text.primary}`}>Loading Weather Data...</div>;
     }
 
-    // Cari prakiraan untuk satu jam ke depan dari waktu saat ini
+    const data = portData[activePortIndex];
+    
     const now = new Date();
     let closestIndex = 0;
     let minDiff = Infinity;
+
     data.forecast_day1.forEach((forecast, index) => {
         const forecastTime = new Date(forecast.time);
         const diff = Math.abs(forecastTime - now);
@@ -118,21 +143,21 @@ const WeatherPage = ({ theme }) => {
         }
     });
 
-    // Tentukan indeks untuk jam berikutnya, dengan fallback jika sudah di akhir
     const nextHourIndex = closestIndex + 1;
     const displayIndex = nextHourIndex < data.forecast_day1.length ? nextHourIndex : closestIndex;
     const displayForecast = data.forecast_day1[displayIndex];
 
-
-    const hourlyData = data.forecast_day1.map(item => ({
-        time: new Date(item.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':'),
-        icon: item.weather,
-        temp: item.temp_avg,
-        windSpeed: item.wind_speed,
-        windGust: item.wind_gust,
-        waveHeight: item.wave_height,
-        waveCategory: item.wave_cat
-    }));
+    const hourlyData = data.forecast_day1
+        .filter(item => new Date(item.time) >= new Date(now.getTime() - 60 * 60 * 1000)) // Start from one hour ago
+        .map(item => ({
+            time: new Date(item.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':'),
+            icon: item.weather,
+            temp: item.temp_avg,
+            windSpeed: item.wind_speed,
+            windGust: item.wind_gust,
+            waveHeight: item.wave_height,
+            waveCategory: item.wave_cat
+        }));
     
     const processDailyForecast = (forecasts) => {
         if (!forecasts || forecasts.length === 0) return [];
@@ -153,10 +178,10 @@ const WeatherPage = ({ theme }) => {
                 (weatherSeverity[a] || weatherSeverity.default) > (weatherSeverity[b] || weatherSeverity.default) ? a : b
             );
             return {
-                day: new Date(date).toLocaleDateString('id-ID', { weekday: 'long' }),
+                day: new Date(date).toLocaleString('id-ID', { weekday: 'long' }),
                 icon: dominantCondition,
                 condition: dominantCondition,
-                temp: `${maxTemp}° / ${minTemp}°`
+                temp: `${minTemp}°/${maxTemp}°`
             };
         });
     };
@@ -164,12 +189,12 @@ const WeatherPage = ({ theme }) => {
     const dailyData = processDailyForecast(data['forecast_day2-4']);
 
     return (
-        <div className="flex flex-col gap-6 card-container">
+        <div key={activePortIndex} className="flex flex-col gap-6 card-container">
             <div className="flex flex-col lg:flex-row gap-6">
-                <div className={`${theme.glassCardClass} p-6 flex flex-col sm:flex-row items-center justify-between card-item lg:w-2/3`}>
+                <div className={`${theme.glassCardClass} p-15 flex flex-col sm:flex-row items-center justify-between card-item lg:w-1/2 animate-card1`}>
                     <div>
                         <h2 className={`text-3xl font-bold ${theme.text.primary}`}>{data.name}</h2>
-                        <p className={theme.text.secondary}>{displayForecast.weather}</p>
+                        <p className={theme.text.secondary}>Prakiraan Pukul {new Date(displayForecast.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')}</p>
                         <p className={`text-7xl sm:text-8xl font-bold my-4 ${theme.text.primary}`}>{displayForecast.temp_avg}°</p>
                         <div className={`mt-4 pt-4 border-t ${theme.border} flex items-center space-x-8`}>
                             <div className="flex items-center space-x-2">
@@ -188,20 +213,23 @@ const WeatherPage = ({ theme }) => {
                             </div>
                         </div>
                     </div>
-                    <WeatherIcon condition={displayForecast.weather} className="w-36 h-36" />
+                    <WeatherIcon condition={displayForecast.weather} size={150} />
                 </div>
-                <div className={`${theme.glassCardClass} p-6 card-item lg:w-1/3 flex flex-col`}>
-                    <h3 className={`font-semibold mb-4 uppercase text-sm ${theme.text.secondary}`}>Prakiraan Cuaca Seminggu Kedepan</h3>
-                    <div className="space-y-2 flex-grow flex flex-col justify-around">
-                        {dailyData.map((item, index) => (<DailyForecastItem key={index} {...item} theme={theme}/>))}
+                <div className="card-item lg:w-1/4 animate-card2">
+                    <Calendar theme={theme} />
+                </div>
+                <div className={`${theme.glassCardClass} p-6 card-item lg:w-1/4 flex flex-col animate-card3`}>
+                    <h3 className={`font-semibold mb-2 text-3xl ${theme.text.primary}`}>Prakiraan Cuaca 3 Hari Kedepan</h3>
+                    <div className="space-y-1 flex-grow flex flex-col justify-around">
+                        {dailyData.slice(0, 5).map((item, index) => (<DailyForecastItem key={index} {...item} theme={theme}/>))}
                     </div>
                 </div>
             </div>
-            <div className={`${theme.glassCardClass} pt-6 pb-4 card-item`}>
-                <h3 className={`font-semibold mb-4 uppercase text-sm px-6 ${theme.text.secondary}`}>Prakiraan Cuaca Hari Ini</h3>
+            <div className={`${theme.glassCardClass} pt-6 pb-4 card-item animate-card4`}>
+                <h3 className={`font-semibold text-3xl px-6 mb-4 ${theme.text.primary}`}>Prakiraan Cuaca Hari Ini</h3>
                 <div className="slider-container">
                     <div className="slider-track">
-                        {[...hourlyData, ...hourlyData].map((item, index) => (<HourlyForecastCard key={index} {...item} theme={theme}/>))}
+                        {hourlyData.length > 0 ? [...hourlyData, ...hourlyData].map((item, index) => (<HourlyForecastCard key={index} {...item} theme={theme}/>)) : <p className={`px-6 ${theme.text.secondary}`}>Tidak ada prakiraan lebih lanjut untuk hari ini.</p>}
                     </div>
                 </div>
             </div>
@@ -219,18 +247,18 @@ const CityCard = ({ port, tempRange, conditionText, windSpeed, windGust, windDir
         <div className='flex-grow flex flex-col justify-center'>
             <div className="flex flex-row items-center justify-center space-x-4">
                 <div className="flex flex-col items-center justify-center w-1/2">
-                    <WeatherIcon condition={conditionText} className="w-16 h-16"/>
+                    <WeatherIcon condition={conditionText} size={90}/>
                     <p className={`text-lg font-bold ${theme.text.primary} mt-1`}>{conditionText}</p>
                 </div>
                 <div className={`w-1/2 self-stretch border-l ${theme.border} flex flex-col justify-center space-y-3 pl-4`}>
                     <div className="flex flex-col items-center justify-center">
                         <Thermometer className="w-6 h-6 mb-1 text-red-500" />
-                        <span className={`${theme.text.primary} text-sm`}>{tempRange}</span>
+                        <span className={`${theme.text.primary} text-sm font-bold`}>{tempRange}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center">
                         <Navigation className={`w-6 h-6 mb-1 ${theme.text.secondary}`} style={{ transform: `rotate(${windDirection}deg)` }} />
-                        <span className={`${theme.text.primary} text-sm`}>{windSpeed} knot</span>
-                        <span className={`${theme.text.secondary} text-xs`}>Gust {windGust} knot</span>
+                        <span className={`${theme.text.primary} text-sm font-bold`}>{windSpeed} knot</span>
+                        <span className={`${theme.text.secondary} text-xs font-bold`}>Gust {windGust} knot</span>
                     </div>
                 </div>
             </div>
@@ -255,8 +283,8 @@ const CitiesPage = ({ theme }) => {
 
     const weatherSeverity = {
         'Cerah': 0, 'Cerah Berawan': 1, 'Berawan': 2, 'Berawan Tebal': 3,
-        'Kabut': 4, 'Hujan Ringan': 5, 'Hujan Sedang': 6, 'Hujan Lebat': 7,
-        'Hujan Petir': 8, 'default': 99
+        'Udara Kabur' : 4, 'Petir' : 5, 'Kabut': 6, 'Hujan Ringan': 7, 'Hujan Sedang': 8, 'Hujan Lebat': 9,
+        'Hujan Petir': 10, 'default': 99
     };
 
     useEffect(() => {
@@ -350,7 +378,7 @@ const CitiesPage = ({ theme }) => {
             {isLoading ? (
                 <div className={`text-center p-10 ${theme.text.primary}`}>Memuat Data Pelabuhan...</div>
             ) : (
-                <div key={activeDayIndex} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+                <div key={activeDayIndex} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6 justify-center">
                     {portData.map((port, index) => {
                         if (!port || !port.valid_from) return null;
 
@@ -487,7 +515,13 @@ const darkTheme = {
 
 const Display = () => {
   const pages = ['weather', 'cities', 'map', 'fish'];
-  const animationDuration = 300;
+  const portIds = ['AA005', 'AA003', 'AA006','AA007','AA001'];
+  const pageDurations = {
+    weather: 15000 * portIds.length,
+    cities: 30000,
+    map: 3000,
+    fish: 3000,
+  }
   const [activePage, setActivePage] = useState(pages[0]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const theme = isDarkMode ? darkTheme : lightTheme;
@@ -497,14 +531,13 @@ const Display = () => {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActivePage(currentPage => {
-        const currentIndex = pages.indexOf(currentPage);
-        const nextIndex = (currentIndex + 1) % pages.length;
-        return pages[nextIndex];
-      });
-    }, animationDuration * 1000);
-    return () => clearInterval(interval);
+    const duration = pageDurations[activePage];
+    const timer = setTimeout(() => {
+      const currentIndex = pages.indexOf(activePage)
+      const nextIndex = (currentIndex + 1) % pages.length;
+      setActivePage(pages[nextIndex]);
+    }, duration);
+    return () => clearTimeout(timer);
   }, [activePage]); // Reset timer on manual click
 
   return (
@@ -516,12 +549,11 @@ const Display = () => {
         <div className={`absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full filter blur-3xl opacity-70 animate-blob ${theme.overlay}`}></div>
         <div className={`absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full filter blur-3xl opacity-70 animate-blob animation-delay-4000 ${theme.overlay2}`}></div>
 
-        <Sidebar activePage={activePage} handleNavClick={handleNavClick} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} animationDuration={animationDuration} />
-        
+        <Sidebar activePage={activePage} handleNavClick={handleNavClick} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} pageDurations={pageDurations} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-28 md:pb-8 overflow-y-auto z-10">
           
           <div key={activePage}>
-            {activePage === 'weather' && <WeatherPage theme={theme}/>}
+            {activePage === 'weather' && <WeatherPage theme={theme} list={portIds}/>}
             {activePage === 'cities' && <CitiesPage theme={theme}/>}
             {activePage === 'map' && <div className={`${theme.glassCardClass} p-6 card-container`}><div className="card-item"><h1 className={`text-3xl font-bold ${theme.text.primary}`}>Map Page (Placeholder)</h1></div></div>}
             {activePage === 'fish' && <FishMapPage theme={theme} isDarkMode={isDarkMode}/>}

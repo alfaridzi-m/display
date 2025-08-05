@@ -9,7 +9,7 @@ const RunningText = ({ theme }) => {
             try {
                 const response = await axios.get('https://bmkg-content-inatews.storage.googleapis.com/datagempa.json');
                 const infoGempa = response.data.info;
-                const combinedText = `--- ${infoGempa.description} --- ${infoGempa.instruction}\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0`;
+                const combinedText = `--- ${infoGempa.description} --- ${infoGempa.instruction}`;
                 setRunningText(combinedText);
             } catch (error) {
                 console.error("Gagal mengambil data gempa:", error);
@@ -25,7 +25,7 @@ const RunningText = ({ theme }) => {
     return (
         <div className={`fixed bottom-20 md:bottom-0 left-0 w-full h-10 flex items-center z-20 ${theme.sidebar} backdrop-blur-xl`}>
             <div className="w-full overflow-hidden whitespace-nowrap">
-                <div className="inline-block" style={{ animation: 'marquee 60s linear infinite' }}>
+                <div className="inline-block" style={{ animation: 'marquee 120s linear infinite' }}>
                     <span className={`text-lg font-medium ${theme.text.primary}`}>{runningText}</span>
                     <span className={`text-lg font-medium ${theme.text.primary}`}>{runningText}</span>
                 </div>

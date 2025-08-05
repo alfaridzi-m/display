@@ -1,8 +1,7 @@
 const WaveFill = ({ animationDuration, theme, pageKey }) => (
-    // Menambahkan `key` untuk memaksa re-mount dan restart animasi setiap kali halaman berubah
     <div key={pageKey} className="absolute bottom-0 left-0 w-full h-full overflow-hidden rounded-lg z-0">
         <div 
-            className="absolute w-full h-full" // Pastikan h-full ada di sini agar transform berfungsi
+            className="absolute w-full h-full"
             style={{ animation: `wave-fill ${animationDuration}s linear forwards`}}
         >
             <div className={`absolute w-[200%] h-[200%] -left-[50%] top-0 ${theme.nav.activeFill}`}
