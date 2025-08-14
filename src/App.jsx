@@ -4,6 +4,8 @@ import './App.css'
 import DisplayMain from './mainpage'
 import DisplayOther from './otherpage'
 import NotAvaiable from './na'
+import Page2 from './page2'
+
 
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 
@@ -15,6 +17,8 @@ const App = () => {
         <Route path="/" element={<DisplayMain />} />
         <Route path="/tespage" element={<Display />} />
         <Route path="/otherpage" element={<DisplayOther />} />
+        <Route path="/page2" element={<Page2 />} />
+
       </Routes>
     </BrowserRouter>
   )
