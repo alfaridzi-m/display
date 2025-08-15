@@ -6,6 +6,7 @@ import axios from 'axios';
 import windDirectionToDegrees from './components/wind-dir';
 import Sidebar from './components/side-bar';
 import RunningText from './components/running-text';
+import TidesCard from './components/tides-chart';
 // --- Komponen UI ---
 
 const getWaveColor = (category) => {
@@ -51,38 +52,6 @@ const DailyForecastItem = ({ day, condition, temp, theme }) => (
   </div>
 );
 
-const Calendar = ({ theme }) => {
-    const today = new Date();
-    const month = today.getMonth();
-    const year = today.getFullYear();
-    const date = today.getDate();
-
-    const monthName = today.toLocaleDateString('id-ID', { month: 'long' });
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 for Sunday, 1 for Monday...
-
-    const daysOfWeek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-
-    const blanks = Array(firstDayOfMonth).fill(null);
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-    return (
-        <div className={`${theme.glassCardClass} p-4 rounded-3xl h-full`}>
-            <div className="flex justify-between items-center mb-2">
-                <h3 className={`text-2xl ${theme.text.primary}`}>{monthName} {year}</h3>
-            </div>
-            <div className="grid grid-cols-7 gap-2 text-center text-xl">
-                {daysOfWeek.map(day => <div key={day} className={`font-semibold ${theme.text.secondary}`}>{day}</div>)}
-                {blanks.map((_, i) => <div key={`blank-${i}`}></div>)}
-                {days.map(d => (
-                    <div key={d} className={`p-1 rounded-full ${d === date ? 'bg-sky-500 text-white' : ''} ${theme.text.primary}`}>
-                        {d}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
 
 const WeatherPage = ({ theme, list }) => {
     const [portData, setPortData] = useState([]);
@@ -190,11 +159,11 @@ const WeatherPage = ({ theme, list }) => {
 
     return (
         <div key={activePortIndex} className="flex flex-col gap-6 card-container">
+            <div className={`${theme.glassCardClass} w-full p-4 text-3xl font-bold text-center`}><span className='font-medium text-gray-700'>Prakiraan Cuaca</span> {data.name}</div>
             <div className="flex flex-col lg:flex-row gap-6">
                 <div className={`${theme.glassCardClass} p-15 flex flex-col sm:flex-row items-center justify-between card-item lg:w-1/2 animate-card1`}>
                     <div>
-                        <h2 className={`text-3xl font-bold ${theme.text.primary}`}>{data.name}</h2>
-                        <p className={theme.text.secondary}>Prakiraan Pukul {new Date(displayForecast.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')}</p>
+                        <p className={`text-2xl font-bold ${theme.text.primary}`}>Prakiraan Pukul {new Date(displayForecast.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')}</p>
                         <p className={`text-7xl sm:text-8xl font-bold my-4 ${theme.text.primary}`}>{displayForecast.temp_avg}°</p>
                         <div className={`mt-4 pt-4 border-t ${theme.border} flex items-center space-x-8`}>
                             <div className="flex items-center space-x-2">
@@ -215,11 +184,11 @@ const WeatherPage = ({ theme, list }) => {
                     </div>
                     <WeatherIcon condition={displayForecast.weather} size={150} />
                 </div>
-                <div className="card-item lg:w-1/4 animate-card2">
-                    <Calendar theme={theme} />
-                </div>
+        <div className={`${theme.glassCardClass} p-4 card-item lg:w-1/2 animate-card2`}>
+            <TidesCard code={data.code} theme={theme} height={300} />
+        </div>
                 <div className={`${theme.glassCardClass} p-6 card-item lg:w-1/4 flex flex-col animate-card3`}>
-                    <h3 className={`font-semibold mb-2 text-3xl ${theme.text.primary}`}>Prakiraan Cuaca 3 Hari Kedepan</h3>
+                    <h3 className={`mb-2 text-2xl font-bold ${theme.text.primary}`}>Prakiraan 3 Hari Kedepan</h3>
                     <div className="space-y-1 flex-grow flex flex-col justify-around">
                         {dailyData.slice(0, 5).map((item, index) => (<DailyForecastItem key={index} {...item} theme={theme}/>))}
                     </div>

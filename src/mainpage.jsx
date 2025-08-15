@@ -14,14 +14,14 @@ function App() {
   const intervalRef = useRef(null);
 
   const kategoriGelombang = {
-    Tenang: { color: "#2793f2" },
-    Rendah: { color: "#00d342" },
-    Sedang: { color: "#fff200" },
-    Tinggi: { color: "#fd8436" },
-    'Sangat Tinggi': { color: "#fb0510" },
-    Ekstrem: { color: "#ef38ce" },
-    'Sangat Ekstrem': { color: "#000000" },
-    unknown: { color: "#808080" }
+    Tenang: { color: "#D0E3F4" },
+    Rendah: { color: "#61AEF2" },
+    Sedang: { color: "#A7E9BE" },
+    Tinggi: { color: "#67E18E" },
+    'Sangat Tinggi': { color: "#F7F387" },
+    Ekstrem: { color: "#F7F38B" },
+    'Sangat Ekstrem': { color: "#F9AB7A" },
+    unknown: { color: "#E0E0E0" }
   };
 
   const getColorForWaveCategory = (category) => {
@@ -53,9 +53,11 @@ function App() {
     }
 
     try {
+      console.log("Mulai mengambil data prakiraan cuaca...");
       const resp = await fetch(url);
       if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
       const data = await resp.json();
+      console.log("Data prakiraan cuaca berhasil diambil.");
       const lookup = {};
       const allTimes = new Set();
       const now = new Date();
@@ -77,8 +79,9 @@ function App() {
       const sortedTimes = Array.from(allTimes).sort();
       setTimeSteps(sortedTimes);
       setForecastData(lookup);
+      console.log("Data prakiraan cuaca berhasil diolah.");
     } catch (err) {
-      console.error('Error fetching or parsing forecasts:', err);
+      console.error('Error saat mengambil atau mengolah data prakiraan:', err);
       throw err;
     }
   }
@@ -88,41 +91,54 @@ function App() {
     const initializeMap = async () => {
       if (mapRef.current || !mapContainerRef.current || !window.L || !window.dayjs) return;
 
+      console.log("Mulai inisialisasi peta...");
       mapRef.current = window.L.map(mapContainerRef.current).setView([-2.548926, 118.0148634], 5);
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(mapRef.current);
+      console.log("Peta dasar dan tile layer berhasil dibuat.");
       
-      const [geojsonData, processedForecasts] = await Promise.all([
-          fetch('https://maritim.bmkg.go.id/marine-data/meta/wilmetos.min.geojson').then(res => res.json()),
-          fetchAndProcessForecasts()
-      ]);
+      try {
+        const [geojsonData] = await Promise.all([
+            // --- PERBAIKAN: Menggunakan URL GeoJSON yang lebih stabil dan ringan ---
+            fetch('https://maritim.bmkg.go.id/marine-data/meta/wilmetos.json').then(res => {
+              if (!res.ok) throw new Error(`Gagal mengambil GeoJSON: Status ${res.status}`);
+              console.log("Data poligon berhasil diambil.");
+              return res.json();
+            }),
+            fetchAndProcessForecasts()
+        ]);
 
-      // Gambar poligon sekali saja dan simpan referensinya
-      window.L.geoJSON(geojsonData, {
-          style: feature => {
-              // Gaya awal, bisa dibuat default atau berdasarkan waktu pertama
-              return { color: "#333", weight: 1, opacity: 0.8, fillColor: kategoriGelombang.unknown.color, fillOpacity: 0.75 };
-          },
-          onEachFeature: (feature, layer) => {
-              // Simpan setiap layer dengan ID uniknya
-              featureLayersRef.current[feature.properties.ID_MAR] = layer;
-          }
-      }).addTo(mapRef.current);
+        console.log("Mulai menggambar poligon ke peta...");
+        window.L.geoJSON(geojsonData, {
+            style: feature => {
+                return { color: "#333", weight: 1, opacity: 0.8, fillColor: kategoriGelombang.unknown.color, fillOpacity: 0.75 };
+            },
+            onEachFeature: (feature, layer) => {
+                featureLayersRef.current[feature.properties.ID_MAR] = layer;
+            }
+        }).addTo(mapRef.current);
+        console.log(`Poligon berhasil digambar. Jumlah: ${Object.keys(featureLayersRef.current).length} wilayah.`);
 
-      const legend = L.control({ position: 'bottomright' });
-      legend.onAdd = function (map) {
-          const div = L.DomUtil.create('div', 'info legend');
-          let labels = ['<strong>Kategori Gelombang</strong>'];
-          for (const category in kategoriGelombang) {
-              const { color } = kategoriGelombang[category];
-              const label = category === 'unknown' ? 'Tidak Ada Data' : category;
-              labels.push(`<i style="background:${color}"></i> ${label}`);
-          }
-          div.innerHTML = labels.join('<br>');
-          return div;
-      };
-      legend.addTo(mapRef.current);
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            let labels = ['<strong>Kategori Gelombang</strong>'];
+            for (const category in kategoriGelombang) {
+                const { color } = kategoriGelombang[category];
+                const label = category === 'unknown' ? 'Tidak Ada Data' : category;
+                labels.push(`<i style="background:${color}"></i> ${label}`);
+            }
+            div.innerHTML = labels.join('<br>');
+            return div;
+        };
+        legend.addTo(mapRef.current);
+        console.log("Legenda ditambahkan.");
+
+      } catch (error) {
+        console.error("GAGAL saat inisialisasi peta dengan data:", error);
+        setMapTitle("Gagal memuat data peta. Cek konsol.");
+      }
     };
 
     if (!window.L || !window.dayjs) {
@@ -148,12 +164,12 @@ function App() {
     return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }};
   }, []);
 
-  // --- LOGIKA BARU: Perbarui gaya & popup saat indeks waktu berubah ---
+  // Perbarui gaya & popup saat indeks waktu berubah
   useEffect(() => {
     if (Object.keys(featureLayersRef.current).length === 0 || !forecastData || timeSteps.length === 0) return;
 
     const currentTime = timeSteps[currentTimeIndex];
-    console.log(`--- Memperbarui Peta untuk Waktu: ${currentTime} ---`);
+    console.log(`--- Memperbarui warna untuk waktu: ${currentTime} ---`);
 
     for (const regionId in featureLayersRef.current) {
         const layer = featureLayersRef.current[regionId];
@@ -164,14 +180,11 @@ function App() {
         if (regionForecasts) {
             const forecast = regionForecasts.find(f => f.time.toISOString() === currentTime);
             if (forecast) {
-                // --- PENAMBAHAN CONSOLE.LOG ---
-                console.log(`Data untuk ${regionId}:`, forecast);
-                // -----------------------------
                 waveCategoryColor = getColorForWaveCategory(forecast.wave_cat);
+                // --- PERBAIKAN: Menggunakan properti 'nama' sesuai data dari wilmetos.min.geojson ---
                 popupContent = `<div style="font-family: sans-serif; line-height: 1.5;"><h3 style="margin: 0 0 5px 0; font-size: 16px;">${layer.feature.properties.nama}</h3><strong>Waktu:</strong> ${window.dayjs(forecast.time).format('DD MMM YYYY, HH:mm')}<hr style="margin: 5px 0;"><strong>Cuaca:</strong> ${forecast.weather}<br><strong>Tinggi Gelombang:</strong> ${forecast.wave_height} m (${forecast.wave_cat})<br><strong>Angin:</strong> ${forecast.wind_speed} knots dari ${forecast.wind_from}</div>`;
             }
         }
-        // Perbarui warna dan popup untuk setiap layer
         layer.setStyle({ fillColor: waveCategoryColor });
         layer.bindPopup(popupContent);
     }
@@ -190,7 +203,7 @@ function App() {
           }
           return nextIndex;
         });
-      }, 1500); // Ganti waktu setiap 1.5 detik
+      }, 1500);
     } else {
       clearInterval(intervalRef.current);
     }
@@ -257,7 +270,6 @@ const LeafletStyles = () => (
         opacity: 0.9;
         border: 1px solid #777;
     }
-    /* --- CSS BARU UNTUK TRANSISI HALUS --- */
     .leaflet-interactive {
         transition: fill 0.75s ease-in-out;
     }

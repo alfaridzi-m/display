@@ -679,14 +679,14 @@ const PerairanPage = ({ theme }) => {
     const intervalRef = useRef(null);
 
     const kategoriGelombang = {
-        Tenang: { color: "#D0E3F4" },
-        Rendah: { color: "#61AEF2" },
-        Sedang: { color: "#A7E9BE" },
-        Tinggi: { color: "#67E18E" },
-        'Sangat Tinggi': { color: "#F7F387" },
-        Ekstrem: { color: "#F7F38B" },
-        'Sangat Ekstrem': { color: "#F9AB7A" },
-        unknown: { color: "#E0E0E0" }
+      Tenang: { color: "#2793f2" },
+      Rendah: { color: "#00d342" },
+      Sedang: { color: "#fff200" },
+      Tinggi: { color: "#fd8436" },
+      'Sangat Tinggi': { color: "#fb0510" },
+      Ekstrem: { color: "#ef38ce" },
+      'Sangat Ekstrem': { color: "#000000" },
+      unknown: { color: "#808080" }
     };
 
     const getColorForWaveCategory = (category) => {

@@ -110,7 +110,7 @@ export default function App() {
   const { width } = useWindowSize();
   
   // Batas lebar layar
-  const breakpoint = 1920;
+  const breakpoint = 1910;
 
   return (
     <div className="bg-gray-100 w-full min-h-screen p-4 md:p-8 flex items-center justify-center font-sans">
@@ -119,7 +119,7 @@ export default function App() {
               Jika lebar lebih besar dari breakpoint, tampilkan WeatherDashboard.
               Jika tidak, tampilkan SmallScreenComponent.
             */}
-            {width > breakpoint ? <WeatherDashboard /> : <SmallScreenComponent width={width} />}
+            {width > breakpoint && width < 2000 ? <WeatherDashboard /> : <SmallScreenComponent width={width} />}
         </div>
     </div>
   );
